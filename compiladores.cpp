@@ -6,11 +6,18 @@
 #include <tuple>
 
 using namespace std;
-
+//-----------Input--------------
 list<int>  list_estados;
 list< tuple<int, int, int> > list_transc;
 list<int> list_estado_acept;
 list<int> list_entradas;
+
+//-----------Output--------------
+list<int>  list_estadosOut;
+list< tuple<int, int, int> > list_transcOut;
+list<int> list_estado_aceptOut;
+list<int> list_entradasOut;
+
 
 
 list<int> eClausura(list<int> *R)
@@ -45,7 +52,6 @@ void print(list<int> e)
 	for_each(e.begin(),e.end(),[](int i){
 		cout<<i<<" ";
 	});
-	cout<<endl;
 }
 
 
@@ -65,22 +71,17 @@ list<int> mover(list<int> R,int x)
 
 bool existe(list<list<int>> _listOfList ,list<int> _list)
 {
-	for_each(_listOfList.begin(),_listOfList.end(),[_list](list<int> lst ){
-		print(lst);
-		print(_list);
-		if(equal(_list.begin(),_list.end(),lst.begin()))
-		{
-			cout<<"Iguales"<<endl;
-			cout<<"----------------------"<<endl;
-			return true;
-		}
-		cout<<"----------------------"<<endl;
-		
 
+
+	int flag=false;
+	for_each(_listOfList.begin(),_listOfList.end(),[_list,&flag](list<int> lst ){
+
+		if(equal(lst.begin(),lst.end(),_list.begin()))
+			flag=true;
 		
-	
 	});
-	return false;
+
+	return flag;
 }
 
 
@@ -90,10 +91,12 @@ void getAFD()
 	list<int> R;
 	list<int> entrada;
 	queue<list<int>> Rmarcados;
+	list<list<int>>  D_est;
+	
+	
+	
 	
 	entrada.push_back(entradaInt);
-	
-	list<list<int>>  D_est;
 	list<int> U_Ptr= eClausura(&entrada);
 	D_est.push_back(eClausura(&entrada));
 
@@ -103,7 +106,8 @@ void getAFD()
 	
 
 	Rmarcados.push(R);
-	
+
+
 	while(!Rmarcados.empty())
 	{
 		list<int> temp_R;
@@ -112,34 +116,44 @@ void getAFD()
 
 			list<int> tmpMoved=mover(Rmarcados.front(),x);
 			list<int> U=eClausura(&tmpMoved);
-			if(!U.empty() && ! existe( D_est,U ))
-			{	
-				U.sort();
+			U.sort();
+			if(!U.empty() && !existe( D_est,U ))
+			{
+		
 				D_est.push_back(U);
 				Rmarcados.push(U);
 				copy ( U.begin(), U.end() , temp_R.begin() );
+
+				cout<<"{ ";
+				print(Rmarcados.front());
+				cout<<" } - "<<x<<" - { ";
+				print(U);
+				cout<<" }"<<endl;
+
 			}
 		});
-
 		Rmarcados.pop();
-
 	}
 
-
-	for_each(D_est.begin(),D_est.end(),[](list<int> lst){
-		print(lst);
-	});
-
 	
-		
+	int index=0;
+	for_each(D_est.begin(),D_est.end(),[& index](list<int> lst){
+		cout<<index<<"= { ";
+		print(lst);
+		cout<<"}"<<endl;
+		index++;
+	});		
 }
+
+
+
 
 
 
 int main()
 {
     fstream iFile;
-	iFile.open ("in.txt", std::fstream::in );
+	iFile.open ("in.txt", fstream::in );
 
     int num_E;
 	int numOf;
@@ -194,6 +208,8 @@ int main()
 	eClausura(R);
 	
 	getAFD();
+
+
 
 
     return 0;
